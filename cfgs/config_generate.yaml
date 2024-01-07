@@ -21,10 +21,10 @@ experiment: generate_${suite.name}_${task_name}_seed_${seed}
 bc_weight_type: 'qfilter'
 
 # expert dataset
-num_demos: 10
+num_demos: 100
 
 # Load weights
-weight: '/path/to/dir/weights/${suite.name}_${obs_type}/${task_name}/drqv2.pt'
+weight: '/home/xingyuan/PatchAIL/PatchAIL/weights/${suite.name}_${obs_type}/${task_name}/drqv2.pt'
 
 hydra:
   run:
