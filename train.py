@@ -25,6 +25,7 @@ from pathlib import Path
 import hydra
 import numpy as np
 import torch
+from omegaconf import OmegaConf
 from dm_env import specs
 
 import utils
@@ -433,6 +434,8 @@ class ClearMLRemoteRuntime:
 
 @hydra.main(config_path='cfgs', config_name='config_normal')
 def main(cfg):
+    print('Using the following config:\n' + OmegaConf.to_yaml(cfg))
+
     runtime = ClearMLRemoteRuntime()
 
     from train import WorkspaceIL as W
