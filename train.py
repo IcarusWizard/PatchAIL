@@ -413,7 +413,7 @@ class ClearMLRemoteRuntime:
             output_uri=True,
         )
 
-        self.download('patchail-datasets', 'patchail-original-datasets', '/root/PatchAIL/expert_demos')          
+        self.download('patchail_datasets', 'patchail-original-datasets', '/root/PatchAIL/expert_demos')          
     
     @classmethod
     def download(cls, project_name, dataset_name, local_path):
