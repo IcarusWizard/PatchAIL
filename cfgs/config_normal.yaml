@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - agent: potil
+  - agent: patchirl_simreg
   - suite: dmc
   - override hydra/launcher: submitit_local
 
