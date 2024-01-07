@@ -19,7 +19,7 @@ import warnings
 import os
 
 os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
-os.environ['MUJOCO_GL'] = 'egl'
+# os.environ['MUJOCO_GL'] = 'egl'
 from pathlib import Path
 
 import hydra
@@ -400,8 +400,41 @@ def delete_file(dir_path, name):
     for f in dir_path.glob(name):
         f.unlink()
 
+import clearml
+CLEARML_PREFIX = 'Users/xingyuanzhang/'
+
+class ClearMLRemoteRuntime:
+    def __init__(self) -> None:
+        self.task = clearml.Task.init(
+            # avoid the automatic patching of clearml for better control
+            # then you need to manage the model checkpoint uploads yourself
+            auto_connect_frameworks=dict(pytorch=False),
+            # we need to set this to True to upload the model checkpointss
+            output_uri=True,
+        )
+
+        self.download('patchail-datasets', 'patchail-original-datasets', '/root/PatchAIL/expert_demos')          
+    
+    @classmethod
+    def download(cls, project_name, dataset_name, local_path):
+        dataset =  clearml.Dataset.get(dataset_project=CLEARML_PREFIX + project_name, dataset_name=dataset_name)
+        data_dir = dataset.get_local_copy()
+        os.symlink(data_dir, local_path, True)
+
+    @property
+    def disable_tqdm(self):
+        return True
+
+    def finish(self, logdir):
+        files = os.listdir(logdir)
+        for file in files:
+            if file.startswith('events') or os.path.isdir(os.path.join(logdir, file)): continue
+            self.task.upload_artifact(file, os.path.join(logdir, file))
+
 @hydra.main(config_path='cfgs', config_name='config_normal')
 def main(cfg):
+    runtime = ClearMLRemoteRuntime()
+
     from train import WorkspaceIL as W
     root_dir = Path.cwd()
     workspace = W(cfg)
@@ -431,6 +464,7 @@ def main(cfg):
 
     workspace.train_il()
 
+    runtime.finish(workspace.work_dir)
 
 if __name__ == '__main__':
     main()
