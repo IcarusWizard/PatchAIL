@@ -1,11 +1,13 @@
 # @package suite
 defaults:
   - _self_
-  - dmc_task@_global_: walker_run
+  - dmc_task@_global_: cheetah_run
 
 suite: dmc
 
 name: 'dmc'
+
+task_name: 'cheetah_run'
 
 # task settings
 frame_stack: 3
