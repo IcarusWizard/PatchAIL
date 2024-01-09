@@ -409,7 +409,8 @@ class ClearMLRemoteRuntime:
         self.task = clearml.Task.init(
             # avoid the automatic patching of clearml for better control
             # then you need to manage the model checkpoint uploads yourself
-            auto_connect_frameworks=dict(pytorch=False),
+            auto_connect_frameworks=False,
+            auto_resource_monitoring=False,
             # we need to set this to True to upload the model checkpointss
             output_uri=True,
         )
