@@ -43,9 +43,8 @@ class RGBArrayAsObservationWrapper(dm_env.Environment):
 
 	From: https://github.com/hill-a/stable-baselines/issues/915
 	"""
-	def __init__(self, env, ml1, width=84, height=84, max_path_length=125, camera_name="corner"):
+	def __init__(self, env, width=84, height=84, max_path_length=200, camera_name="corner2"):
 		self._env = env
-		self.ml1 = ml1
 		self._width = width
 		self._height = height
 		self.camera_name = camera_name
@@ -79,9 +78,12 @@ class RGBArrayAsObservationWrapper(dm_env.Environment):
 
 
 	def reset(self, **kwargs):
-		# Set random goal
-		task = random.choice(self.ml1.train_tasks)
-		self._env.set_task(task)  # Set task
+		if self.camera_name == "corner2":
+			self._env.model.cam_pos[2][:] = [0.75, 0.075, 0.7]
+
+		# # Set random goal
+		# task = random.choice(self.ml1.train_tasks)
+		# self._env.set_task(task)  # Set task
 
 		# Set episode step to 0
 		self.episode_step = 0
@@ -332,16 +334,20 @@ class ExtendedTimeStepWrapper(dm_env.Environment):
 
 
 def make(name, frame_stack, action_repeat, seed):
-	ml1 = metaworld.ML1(name) # Construct the benchmark, sampling tasks
-	env = ml1.train_classes[name]()  # Create an environment with task
-	env.seed(seed)
+	name = name + '-goal-observable'
+	env_class = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[name]
+	env = env_class(seed=seed)
+	env._freeze_rand_vec = False
+	# ml1 = metaworld.ML1(name) # Construct the benchmark, sampling tasks
+	# env = ml1.train_classes[name]()  # Create an environment with task
+	# env.seed(seed)
 	
-	# Set a random task to be able to use env
-	task = random.choice(ml1.train_tasks)
-	env.set_task(task)  # Set task
+	# # Set a random task to be able to use env
+	# task = random.choice(ml1.train_tasks)
+	# env.set_task(task)  # Set task
 	
 	# add wrappers
-	env = RGBArrayAsObservationWrapper(env, ml1, max_path_length=MAX_PATH_LENGTH[name], camera_name=CAMERA[name])
+	env = RGBArrayAsObservationWrapper(env)
 	env = ActionDTypeWrapper(env, np.float32)
 	env = ActionRepeatWrapper(env, action_repeat)
 	env = FrameStackWrapper(env, frame_stack)

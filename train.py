@@ -176,7 +176,8 @@ class WorkspaceIL:
         eval_until_episode = utils.Until(self.cfg.suite.num_eval_episodes)
 
         if self.cfg.suite.name == 'openaigym' or self.cfg.suite.name == 'metaworld':
-            paths = []
+            successes = []
+            any_successes = []
         while eval_until_episode(episode):
             if self.cfg.suite.name == 'metaworld':
                 path = []
@@ -202,9 +203,10 @@ class WorkspaceIL:
             if self.video_recorder:
                 self.video_recorder.save(f'{self.global_frame}.mp4')
             if self.cfg.suite.name == 'openaigym':
-                paths.append(time_step.observation['goal_achieved'])
+                successes.append(time_step.observation['goal_achieved'])
             elif self.cfg.suite.name == 'metaworld':
-                paths.append(1 if np.sum(path)>10 else 0)
+                successes.append(path[-1])
+                any_successes.append(np.any(np.array(path) > 0))
         
         with self.logger.log_and_dump_ctx(self.global_frame, ty='eval') as log:
             log('episode_reward', total_reward / episode)
@@ -214,7 +216,8 @@ class WorkspaceIL:
             if repr(self.agent) != 'drqv2':
                 log('expert_reward', self.expert_reward)
             if self.cfg.suite.name == 'openaigym' or self.cfg.suite.name == 'metaworld':
-                log("success_percentage", np.mean(paths))
+                log("success_percentage", np.mean(successes))
+                log("any_success_percentage", np.mean(any_successes))
 
     def train_il(self):
         # predicates
